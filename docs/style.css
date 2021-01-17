@@ -24,6 +24,7 @@ h1 {
   top:0;
   left:0;
   right: 0;
+  background-color: black;
 }
 
 div#hint {
@@ -33,7 +34,7 @@ div#hint {
 }
 
 div#result {
-  padding: 64px;
+  padding: 160px 32px 64px 32px;
   font-size: 18px;
   font-weight: bold;
 }

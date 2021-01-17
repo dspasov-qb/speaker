@@ -14,6 +14,23 @@ recognition.maxAlternatives = 1;
 var listening = false;
 var hint = document.querySelector('#hint');
 var resultText = document.querySelector('#result');
+var url = 'https://5e8c8104e61fbd00164aed46.mockapi.io/pipelines/speak';
+
+async function sendData(payload = {}) {
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  }).then(response => response.json())
+  .then(data => {
+    console.log('Success:', data);
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+}
 
 document.body.onclick = function() {
   if (listening === false) {
@@ -36,6 +53,8 @@ recognition.onresult = function(event) {
   node.appendChild(textnode);
   resultText.appendChild(node);
 
+  sendData({ text: result });
+
   hint.textContent = "Click to start";
 }
 
@@ -50,3 +69,4 @@ recognition.onnomatch = function(event) {
 recognition.onerror = function(event) {
   hint.textContent = 'Error occurred in recognition: ' + event.error;
 }
+
