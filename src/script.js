@@ -11,18 +11,19 @@ recognition.lang = 'en-US';
 recognition.interimResults = false;
 recognition.maxAlternatives = 1;
 
-var started = false;
+var listening = false;
 var hint = document.querySelector('#hint');
 var resultText = document.querySelector('#result');
 
 document.body.onclick = function() {
-  if (started === false) {
-    started = true;
+  if (listening === false) {
+    listening = true;
     recognition.start();
     hint.textContent = 'Listening ...'
   } else {
     recognition.stop();
-    started = false;
+    listening = false;
+    hint.textContent = "Click to start";
   }
 }
 
@@ -30,21 +31,20 @@ recognition.onresult = function(event) {
   var lastResult = event.results[event.results.length - 1][0];
   var result = lastResult.transcript.toLowerCase().trim();
 
-  var node = document.createElement("P");                 // Create a <li> node
-  var textnode = document.createTextNode(result);         // Create a text node
-  node.appendChild(textnode);                              // Append the text to <li>
+  var node = document.createElement("P");
+  var textnode = document.createTextNode(result);
+  node.appendChild(textnode);
   resultText.appendChild(node);
-  hint.textContent = "Click to start";
 
+  hint.textContent = "Click to start";
 }
 
 recognition.onspeechend = function() {
-  console.log('stop');
   recognition.stop();
 }
 
 recognition.onnomatch = function(event) {
-  hint.textContent = "I didn't recognise that result.";
+  hint.textContent = "I didn't recognise this.";
 }
 
 recognition.onerror = function(event) {
