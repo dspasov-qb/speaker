@@ -25,6 +25,7 @@ var resultText = document.querySelector('#result');
 async function sendData(payload = {}) {
   fetch(hook, {
     method: 'POST',
+    mode: 'no-cors'
     headers: {
       'Content-Type': 'application/json'
     },
