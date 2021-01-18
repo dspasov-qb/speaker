@@ -43,8 +43,6 @@ function processResponse(data) {
   var respond = 'No response'
   if ('speech_synthesize' in data) {
     respond = data.speech_synthesize;
-  } else if ('speech_recognised' in data) {
-    respond = data.speech_recognised;
   }
 
   speak(respond);
