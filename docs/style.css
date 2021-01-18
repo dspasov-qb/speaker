@@ -37,6 +37,7 @@ div#result {
   padding: 160px 32px 64px 32px;
   font-size: 18px;
   font-weight: bold;
+  text-align: center;
 }
 
 ul {
