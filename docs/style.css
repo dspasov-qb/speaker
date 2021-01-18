@@ -10,7 +10,7 @@ html {
 
 body {
   height: inherit;
-  background-color: black;
+  background-color: #111111;
   color: #bbbbbb;
 }
 
@@ -29,7 +29,7 @@ h1 {
   top:0;
   left:0;
   right: 0;
-  background-color: black;
+  background-color: #111111;
 }
 
 div#hint {
@@ -38,8 +38,27 @@ div#hint {
   text-align: center;
 }
 
+button#mic {
+  position: fixed;
+  bottom: 16px;
+  left: calc(50% - 32px);
+  width: 72px;
+  height: 72px;
+  border: none;
+  border-radius: 50%;
+  background: #111111 url('mic_none-white-24dp.svg') center no-repeat;
+  background-size: 48px;
+  outline: none;
+}
+
+button#mic.active {
+  border: 1px solid #eeeeee;
+  background: #111111 url('mic-white-24dp.svg') center no-repeat;
+  background-size: 48px;
+}
+
 div#result {
-  padding: 128px 32px 64px 32px;
+  padding: 104px 32px 104px 32px;
   font-size: 18px;
   text-align: center;
 }

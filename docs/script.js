@@ -19,7 +19,7 @@ const urlParams = new URLSearchParams(window.location.search);
 var hook = urlParams.get("hook");
 
 var listening = false;
-var hint = document.querySelector('#hint');
+var mic = document.querySelector('#mic');
 var resultText = document.querySelector('#result');
 var url = 'https://5e8c8104e61fbd00164aed46.mockapi.io/pipelines/speak';
 
@@ -41,17 +41,17 @@ function appendParagraph(text, type='speech') {
 }
 
 function processResponse(data) {
-  if ('speech_synthesize' in data) {
-    var respond = data.speech_synthesize;
+  if ('speech_recognised' in data) {
+    var respond = data.speech_recognised;
     speak(respond);
     appendParagraph(respond, 'response');
   }
 }
 
-async function sendData(payload = {}) {
+async function triggerHook(payload = {}) {
   fetch(hook, {
     method: 'POST',
-    mode: 'no-cors',
+    // mode: 'no-cors',
     headers: {
       'Content-Type': 'application/json'
     },
@@ -71,15 +71,15 @@ async function sendData(payload = {}) {
   });
 }
 
-document.body.onclick = function() {
+mic.onclick = function() {
   if (listening === false) {
     listening = true;
+    mic.classList.add('active');
     recognition.start();
-    hint.textContent = 'Listening ...';
   } else {
     recognition.stop();
     listening = false;
-    hint.textContent = "Click to start";
+    mic.classList.remove('active');
   }
 }
 
@@ -89,20 +89,20 @@ recognition.onresult = function(event) {
 
   appendParagraph(result);
 
-  sendData({ speech_recognised: result });
-
-  hint.textContent = "Click to start";
+  triggerHook({ speech_recognised: result });
 }
 
 recognition.onspeechend = function() {
+  listening = false;
   recognition.stop();
+  mic.classList.remove('active');
 }
 
 recognition.onnomatch = function(event) {
-  hint.textContent = "I didn't recognise this.";
+  appendParagraph("I didn't recognise this.", 'error');
 }
 
 recognition.onerror = function(event) {
-  hint.textContent = 'Error occurred in recognition: ' + event.error;
+  appendParagraph('Error occurred in recognition: ' + event.error, 'error');
 }
 
