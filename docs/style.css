@@ -41,10 +41,17 @@ div#hint {
 div#result {
   padding: 128px 32px 64px 32px;
   font-size: 18px;
-  font-weight: bold;
   text-align: center;
 }
 
-ul {
-  margin: 0;
+p.speech {
+  font-style: italic;
+}
+
+p.response {
+  color: #dddddd;
+}
+
+p.error {
+  color: red;
 }

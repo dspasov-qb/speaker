@@ -1,3 +1,6 @@
+// Synthesis
+var synth = window.speechSynthesis;
+// Recognition
 var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
 var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
 var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
@@ -15,12 +18,35 @@ recognition.maxAlternatives = 1;
 const urlParams = new URLSearchParams(window.location.search);
 var hook = urlParams.get("hook");
 
-console.log('hook', hook);
-
 var listening = false;
 var hint = document.querySelector('#hint');
 var resultText = document.querySelector('#result');
-// var url = 'https://5e8c8104e61fbd00164aed46.mockapi.io/pipelines/speak';
+var url = 'https://5e8c8104e61fbd00164aed46.mockapi.io/pipelines/speak';
+
+function speak(text){
+  if (synth.speaking) {
+    console.error('speechSynthesis.speaking');
+    return;
+  }
+  var utterThis = new SpeechSynthesisUtterance(text);
+  synth.speak(utterThis);
+}
+
+function appendParagraph(text, type='speech') {
+  var node = document.createElement("P");
+  var textnode = document.createTextNode(text);
+  node.appendChild(textnode);
+  node.classList.add(type);
+  resultText.appendChild(node);
+}
+
+function processResponse(data) {
+  if ('speech_synthesize' in data) {
+    var respond = data.speech_synthesize;
+    speak(respond);
+    appendParagraph(respond, 'response');
+  }
+}
 
 async function sendData(payload = {}) {
   fetch(hook, {
@@ -30,12 +56,18 @@ async function sendData(payload = {}) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(payload)
-  }).then(response => response.json())
-  .then(data => {
-    console.log('Success:', data);
+  }).then(response => {
+    if (!response.ok) {
+      throw new Error('Response was not ok');
+    }
+    return response.json();
   })
-  .catch((error) => {
-    console.error('Error:', error);
+  .then(data => {
+    processResponse(data);
+  })
+  .catch(error => {
+    speak(error);
+    appendParagraph(error, 'error');
   });
 }
 
@@ -43,7 +75,7 @@ document.body.onclick = function() {
   if (listening === false) {
     listening = true;
     recognition.start();
-    hint.textContent = 'Listening ...'
+    hint.textContent = 'Listening ...';
   } else {
     recognition.stop();
     listening = false;
@@ -55,12 +87,9 @@ recognition.onresult = function(event) {
   var lastResult = event.results[event.results.length - 1][0];
   var result = lastResult.transcript.toLowerCase().trim();
 
-  var node = document.createElement("P");
-  var textnode = document.createTextNode(result);
-  node.appendChild(textnode);
-  resultText.appendChild(node);
+  appendParagraph(result);
 
-  sendData({ text: result });
+  sendData({ speech_recognised: result });
 
   hint.textContent = "Click to start";
 }
