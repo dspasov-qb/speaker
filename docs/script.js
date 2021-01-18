@@ -11,13 +11,19 @@ recognition.lang = 'en-US';
 recognition.interimResults = false;
 recognition.maxAlternatives = 1;
 
+
+const urlParams = new URLSearchParams(window.location.search);
+var hook = urlParams.get("hook");
+
+console.log('hook', hook);
+
 var listening = false;
 var hint = document.querySelector('#hint');
 var resultText = document.querySelector('#result');
-var url = 'https://5e8c8104e61fbd00164aed46.mockapi.io/pipelines/speak';
+// var url = 'https://5e8c8104e61fbd00164aed46.mockapi.io/pipelines/speak';
 
 async function sendData(payload = {}) {
-  fetch(url, {
+  fetch(hook, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
