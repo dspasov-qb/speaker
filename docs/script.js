@@ -3,7 +3,6 @@ var synth = window.speechSynthesis;
 // Recognition
 var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
 var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
-var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
 var grammar = '#JSGF V1.0;'
 var recognition = new SpeechRecognition();
 var speechRecognitionList = new SpeechGrammarList();
@@ -41,17 +40,21 @@ function appendParagraph(text, type='speech') {
 }
 
 function processResponse(data) {
-  if ('speech_recognised' in data) {
-    var respond = data.speech_recognised;
-    speak(respond);
-    appendParagraph(respond, 'response');
+  var respond = 'No response'
+  if ('speech_synthesize' in data) {
+    respond = data.speech_synthesize;
+  } else if ('speech_recognised' in data) {
+    respond = data.speech_recognised;
   }
+
+  speak(respond);
+  appendParagraph(respond, 'response');
 }
 
 async function triggerHook(payload = {}) {
-  fetch(hook, {
+  fetch(hook || url, {
     method: 'POST',
-    // mode: 'no-cors',
+    mode: hook ? 'no-cors': 'cors',
     headers: {
       'Content-Type': 'application/json'
     },
@@ -88,7 +91,6 @@ recognition.onresult = function(event) {
   var result = lastResult.transcript.toLowerCase().trim();
 
   appendParagraph(result);
-
   triggerHook({ speech_recognised: result });
 }
 
