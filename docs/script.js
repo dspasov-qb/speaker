@@ -84,6 +84,9 @@ async function triggerHook(payload = {}) {
       speak(error);
       appendParagraph(error, 'error');
     });
+  } else {
+    speak('Hook is not a valid url');
+    appendParagraph('Hook is not a valid url', 'error');
   }
 }
 
