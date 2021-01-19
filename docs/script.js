@@ -70,7 +70,8 @@ async function triggerHook(payload = {}) {
     fetch(hookUrl.href, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': 'https://dspasov-qb.github.io',
       },
       body: JSON.stringify(payload)
     }).then(response => {
