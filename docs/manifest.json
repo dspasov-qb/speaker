@@ -10,7 +10,7 @@
     {
       "src": "images/speech.svg",
       "sizes": "48x48 192x192 512x512",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
     }
   ],
   "background_color": "#111111"
