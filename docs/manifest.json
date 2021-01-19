@@ -8,7 +8,7 @@
   "theme_color": "#1c2c17",
   "icons": [
     {
-      "src": "docs/images/speech.svg",
+      "src": "images/speech.svg",
       "sizes": "48x48 192x192 512x512",
       "type": "image/svg+xml"
     }
