@@ -69,7 +69,6 @@ async function triggerHook(payload = {}) {
   if (hookUrl) {
     fetch(hookUrl.href, {
       method: 'POST',
-      mode: 'no-cors',
       headers: {
         'Content-Type': 'application/json'
       },
