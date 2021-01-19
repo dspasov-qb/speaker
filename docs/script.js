@@ -69,9 +69,9 @@ async function triggerHook(payload = {}) {
   if (hookUrl) {
     fetch(hookUrl.href, {
       method: 'POST',
+      mode: 'no-cors',
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': 'https://dspasov-qb.github.io',
       },
       body: JSON.stringify(payload)
     }).then(response => {
