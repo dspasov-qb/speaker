@@ -121,7 +121,7 @@ function confirmTranscript(transcript) {
       true
     );
   } else {
-    if (['yes', 'ok', 'send', 'yeah', 'hell yeah'].includes(transcript)) {
+    if (['yes', 'yes please', 'ok', 'send', 'yeah', 'hell yeah'].includes(transcript)) {
       triggerHook({ transcript: prevTranscript, conversation_id });
     } else {
       speakAndWrite("Didn't send it.");
