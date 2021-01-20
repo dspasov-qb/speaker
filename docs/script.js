@@ -151,7 +151,7 @@ recognition.onresult = function (event) {
   var lastResult = event.results[event.results.length - 1][0];
   var transcript = lastResult.transcript.toLowerCase().trim();
   appendParagraph(transcript);
-  var command = transcript.replace(' ', '');
+  var command = transcript.replaceAll(' ', '').toLowerCase();
   if (command in commands) {
     commands[command]();
   } else {
