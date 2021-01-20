@@ -4,7 +4,7 @@
   "description": "Client for Pipelines Speech channel",
   "lang": "en-US",
   "start_url": "https://dspasov-qb.github.io/speaker/",
-  "display": "fullscreen",
+  "display": "standalone",
   "theme_color": "#1c2c17",
   "icons": [
     {
