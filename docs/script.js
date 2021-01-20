@@ -27,11 +27,11 @@ var settings = {
 var commands = {
   'alwaysask': () => {
     settings.alwaysAsk = true;
-    speakAndWrite('I will always ask for confirmation before sending transcript to the server.');
+    speakAndWrite('I will always ask before sending transcript to the server.');
   },
   'neverask': () => {
     settings.alwaysAsk = false;
-    speakAndWrite('I will never ask for confirmation before sending transcript to the server.');
+    speakAndWrite('I will never ask before sending transcript to the server.');
   },
 };
 
