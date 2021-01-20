@@ -1,18 +1,17 @@
 // Synthesis
 var synth = window.speechSynthesis;
 // Recognition
-var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
-var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
-var grammar = '#JSGF V1.0;'
+var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList;
+var grammar = "#JSGF V1.0;";
 var recognition = new SpeechRecognition();
 var speechRecognitionList = new SpeechGrammarList();
 speechRecognitionList.addFromString(grammar, 1);
 recognition.grammars = speechRecognitionList;
 recognition.continuous = false;
-recognition.lang = 'en-US';
+recognition.lang = "en-US";
 recognition.interimResults = false;
 recognition.maxAlternatives = 1;
-
 
 const urlParams = new URLSearchParams(window.location.search);
 var hookUrl;
@@ -21,28 +20,35 @@ try {
   var hookUrl = new URL(window.atob(urlParams.get("hook")));
   if (!(hookUrl.protocol === "http:" || hookUrl.protocol === "https:")) {
     hookUrl = undefined;
-    console.warn('Hook is not a valid url');
+    console.warn("Hook is not a valid url");
   }
-} catch(e) {
+} catch (e) {
   console.warn(e);
 }
 
 var listening = false;
 var conversation_id = null;
 
-var mic = document.querySelector('#mic');
-var resultText = document.querySelector('#result');
+var mic = document.querySelector("#mic");
+var resultText = document.querySelector("#result");
 
-function speak(text){
+function speak(text, listenOnEnd=false) {
   if (synth.speaking) {
-    console.error('speechSynthesis.speaking');
+    console.error("speechSynthesis.speaking");
     return;
   }
   var utterThis = new SpeechSynthesisUtterance(text);
+  if (listenOnEnd) {
+    utterThis.onend= function(event) {
+      listening = true;
+      mic.classList.add("active");
+      recognition.start();
+    }
+  }
   synth.speak(utterThis);
 }
 
-function appendParagraph(text, type='speech') {
+function appendParagraph(text, type = "speech") {
   var node = document.createElement("P");
   var textnode = document.createTextNode(text);
   node.appendChild(textnode);
@@ -51,76 +57,105 @@ function appendParagraph(text, type='speech') {
 }
 
 function processResponse(data) {
-  var respond = 'No response'
-  if ('speech_synthesise' in data) {
+  var respond = "No response";
+  if ("speech_synthesise" in data) {
     respond = data.speech_synthesise;
   }
-  if ('conversation_id' in data && data.conversation_id) {
+  if ("conversation_id" in data && data.conversation_id) {
     conversation_id = data.conversation_id;
   } else {
-    conversation_id = null
+    conversation_id = null;
   }
 
   speak(respond);
-  appendParagraph(respond, 'response');
+  appendParagraph(respond, "response");
 }
 
-async function triggerHook(payload = {}) {
-  if (hookUrl) {
-    fetch(hookUrl.href, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    }).then(response => {
+function speakAndWrite(string, listenOnEnd=false) {
+  speak(string, listenOnEnd);
+  appendParagraph(string);
+}
+
+function sendRequest(payload) {
+  fetch(hookUrl.href, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+    .then((response) => {
       if (!response.ok) {
-        throw new Error('Response was not ok');
+        throw new Error("Response was not ok");
       }
       return response.json();
-    }).then(data => {
+    })
+    .then((data) => {
       processResponse(data);
-    }).catch(error => {
+    })
+    .catch((error) => {
       speak(error);
-      appendParagraph(error, 'error');
+      appendParagraph(error, "error");
     });
+}
+
+var prevPayload = false;
+async function triggerHook(payload = {}) {
+  if (hookUrl) {
+    if (!prevPayload) {
+      prevPayload = payload;
+      speakAndWrite(
+        `Do you want to send, "${payload.transcript}"?`,
+        true
+      );
+    } else {
+      const answer = payload.transcript;
+      if (answer === "yes") {
+        sendRequest(prevPayload);
+      
+      } else {
+        speakAndWrite("Did not send");
+        
+      }
+
+      prevPayload = false;
+    }
   } else {
-    speak('Hook is not a valid url');
-    appendParagraph('Hook is not a valid url', 'error');
+    speak("Hook is not a valid url");
+    appendParagraph("Hook is not a valid url", "error");
   }
 }
 
-mic.onclick = function() {
+mic.onclick = function () {
   if (listening === false) {
     listening = true;
-    mic.classList.add('active');
+    mic.classList.add("active");
     recognition.start();
   } else {
     recognition.stop();
     listening = false;
-    mic.classList.remove('active');
+    mic.classList.remove("active");
   }
-}
+};
 
-recognition.onresult = function(event) {
+recognition.onresult = function (event) {
   var lastResult = event.results[event.results.length - 1][0];
   var result = lastResult.transcript.toLowerCase().trim();
 
   appendParagraph(result);
   triggerHook({ transcript: result, conversation_id: conversation_id });
-}
+};
 
-recognition.onspeechend = function() {
+recognition.onspeechend = function () {
   listening = false;
   recognition.stop();
-  mic.classList.remove('active');
-}
+  mic.classList.remove("active");
+};
 
-recognition.onnomatch = function(event) {
-  appendParagraph("I didn't recognise this.", 'error');
-}
+recognition.onnomatch = function (event) {
+  appendParagraph("I didn't recognise this.", "error");
+};
 
-recognition.onerror = function(event) {
-  appendParagraph('Error occurred in recognition: ' + event.error, 'error');
-}
-
+recognition.onerror = function (event) {
+  appendParagraph("Error occurred in recognition: " + event.error, "error");
+};
