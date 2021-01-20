@@ -13,9 +13,16 @@ recognition.lang = "en-US";
 recognition.interimResults = false;
 recognition.maxAlternatives = 1;
 
+// Variables
 const urlParams = new URLSearchParams(window.location.search);
 var hookUrl;
+var prevTranscript = null;
+var listening = false;
+var conversation_id = null;
+var mic = document.querySelector("#mic");
+var resultText = document.querySelector("#result");
 
+// Hook url
 try {
   var hookUrl = new URL(window.atob(urlParams.get("hook")));
   if (!(hookUrl.protocol === "http:" || hookUrl.protocol === "https:")) {
@@ -25,12 +32,6 @@ try {
 } catch (e) {
   console.warn(e);
 }
-
-var listening = false;
-var conversation_id = null;
-
-var mic = document.querySelector("#mic");
-var resultText = document.querySelector("#result");
 
 function toggleRecognition(switchOn) {
   if (listening === false) {
@@ -111,31 +112,29 @@ async function triggerHook(payload = {}) {
   }
 }
 
-var prevPayload = false;
-recognition.onresult = function (event) {
-  var lastResult = event.results[event.results.length - 1][0];
-  var result = lastResult.transcript.toLowerCase().trim();
-
-  appendParagraph(result);
-
-  const payload = { transcript: result, conversation_id: conversation_id };
-  if (!prevPayload) {
-    prevPayload = payload;
+function confirmTranscript(transcript) {
+  if (!prevTranscript) {
+    prevTranscript = transcript;
     speakAndWrite(
-      `Do you want to send, "${payload.transcript}"?`,
+      `Do you want to send "${transcript}"?`,
       "response",
       true
     );
   } else {
-    const answer = payload.transcript;
-    if (answer === "yes") {
-      triggerHook(payload);
+    if (['yes', 'ok', 'send', 'yeah', 'hell yeah'].includes(transcript)) {
+      triggerHook({ transcript: prevTranscript, conversation_id });
     } else {
-      speakAndWrite("Did not send");
+      speakAndWrite("Didn't send it.");
     }
-
-    prevPayload = false;
+    prevTranscript = null;
   }
+}
+
+recognition.onresult = function (event) {
+  var lastResult = event.results[event.results.length - 1][0];
+  var result = lastResult.transcript.toLowerCase().trim();
+  appendParagraph(result);
+  confirmTranscript(result)
 };
 
 recognition.onspeechend = function () {
