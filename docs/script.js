@@ -20,17 +20,17 @@ try {
   var hookUrl = new URL(window.atob(urlParams.get("hook")));
   if (!(hookUrl.protocol === "http:" || hookUrl.protocol === "https:")) {
     hookUrl = undefined;
-    console.warn('Hook is not a valid url');
+    console.warn("Hook is not a valid url");
   }
-} catch(e) {
+} catch (e) {
   console.warn(e);
 }
 
 var listening = false;
 var conversation_id = null;
 
-var mic = document.querySelector('#mic');
-var resultText = document.querySelector('#result');
+var mic = document.querySelector("#mic");
+var resultText = document.querySelector("#result");
 
 function speak(text) {
   if (synth.speaking) {
@@ -50,42 +50,71 @@ function appendParagraph(text, type = "speech") {
 }
 
 function processResponse(data) {
-  var respond = 'No response'
-  if ('speech_synthesise' in data) {
+  var respond = "No response";
+  if ("speech_synthesise" in data) {
     respond = data.speech_synthesise;
   }
-  if ('conversation_id' in data && data.conversation_id) {
+  if ("conversation_id" in data && data.conversation_id) {
     conversation_id = data.conversation_id;
   } else {
-    conversation_id = null
+    conversation_id = null;
   }
 
   speak(respond);
   appendParagraph(respond, "response");
 }
 
-async function triggerHook(payload = {}) {
-  if (hookUrl) {
-    fetch(hookUrl.href, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    }).then(response => {
+function speakAndWrite(string) {
+  speak(string);
+  appendParagraph(string);
+}
+
+function sendRequest(payload) {
+  fetch(hookUrl.href, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+    .then((response) => {
       if (!response.ok) {
-        throw new Error('Response was not ok');
+        throw new Error("Response was not ok");
       }
       return response.json();
-    }).then(data => {
+    })
+    .then((data) => {
       processResponse(data);
-    }).catch(error => {
+    })
+    .catch((error) => {
       speak(error);
-      appendParagraph(error, 'error');
+      appendParagraph(error, "error");
     });
+}
+
+var prevPayload = false;
+async function triggerHook(payload = {}) {
+  if (hookUrl) {
+    if (!prevPayload) {
+      prevPayload = payload;
+      speakAndWrite(
+        `Do you want to send, "${payload.transcript}"? Say yes if you do`
+      );
+    } else {
+      const answer = payload.transcript;
+      if (answer === "yes") {
+        sendRequest(prevPayload);
+      
+      } else {
+        speakAndWrite("Did not send");
+        
+      }
+
+      prevPayload = false;
+    }
   } else {
-    speak('Hook is not a valid url');
-    appendParagraph('Hook is not a valid url', 'error');
+    speak("Hook is not a valid url");
+    appendParagraph("Hook is not a valid url", "error");
   }
 }
 
@@ -107,7 +136,7 @@ recognition.onresult = function (event) {
 
   appendParagraph(result);
   triggerHook({ transcript: result, conversation_id: conversation_id });
-}
+};
 
 recognition.onspeechend = function () {
   listening = false;
