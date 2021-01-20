@@ -21,6 +21,19 @@ var listening = false;
 var conversation_id = null;
 var mic = document.querySelector("#mic");
 var resultText = document.querySelector("#result");
+var settings = {
+  alwaysAsk: true
+};
+var commands = {
+  'alwaysask': () => {
+    settings.alwaysAsk = true;
+    speakAndWrite('I will always ask for confirmation before sending transcript to the server.');
+  },
+  'neverask': () => {
+    settings.alwaysAsk = false;
+    speakAndWrite('I will never ask for confirmation before sending transcript to the server.');
+  },
+};
 
 // Hook url
 try {
@@ -105,7 +118,7 @@ async function triggerHook(payload = {}) {
         processResponse(data);
       })
       .catch((error) => {
-        speakAndWrite(respond, "error");
+        speakAndWrite(error.message, 'error');
       });
   } else {
     speakAndWrite("Hook is not a valid url", "error");
@@ -132,9 +145,18 @@ function confirmTranscript(transcript) {
 
 recognition.onresult = function (event) {
   var lastResult = event.results[event.results.length - 1][0];
-  var result = lastResult.transcript.toLowerCase().trim();
-  appendParagraph(result);
-  confirmTranscript(result)
+  var transcript = lastResult.transcript.toLowerCase().trim();
+  appendParagraph(transcript);
+  var command = transcript.replace(' ', '');
+  if (command in commands) {
+    commands[command]();
+  } else {
+    if (settings.alwaysAsk) {
+      confirmTranscript(transcript);
+    } else {
+      triggerHook({ transcript: transcript, conversation_id });
+    }
+  }
 };
 
 recognition.onspeechend = function () {
