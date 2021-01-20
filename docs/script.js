@@ -33,6 +33,9 @@ var commands = {
     settings.alwaysAsk = false;
     speakAndWrite('I will never ask before sending transcript to the server.');
   },
+  'okspeaker': () => {
+    speakAndWrite('How can I help you?');
+  },
 };
 
 // Hook url
