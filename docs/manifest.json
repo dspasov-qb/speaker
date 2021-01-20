@@ -1,0 +1,17 @@
+{
+  "name": "Speaker",
+  "short_name": "Speaker",
+  "description": "Client for Pipelines Speech channel",
+  "lang": "en-US",
+  "start_url": "https://dspasov-qb.github.io/speaker/",
+  "display": "fullscreen",
+  "theme_color": "#1c2c17",
+  "icons": [
+    {
+      "src": "images/speech.svg",
+      "sizes": "48x48 192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "background_color": "#111111"
+}

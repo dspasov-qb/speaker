@@ -14,12 +14,23 @@ recognition.interimResults = false;
 recognition.maxAlternatives = 1;
 
 const urlParams = new URLSearchParams(window.location.search);
-var hook = urlParams.get("hook");
+var hookUrl;
+
+try {
+  var hookUrl = new URL(window.atob(urlParams.get("hook")));
+  if (!(hookUrl.protocol === "http:" || hookUrl.protocol === "https:")) {
+    hookUrl = undefined;
+    console.warn('Hook is not a valid url');
+  }
+} catch(e) {
+  console.warn(e);
+}
 
 var listening = false;
-var mic = document.querySelector("#mic");
-var resultText = document.querySelector("#result");
-var url = "https://5e8c8104e61fbd00164aed46.mockapi.io/pipelines/speak";
+var conversation_id = null;
+
+var mic = document.querySelector('#mic');
+var resultText = document.querySelector('#result');
 
 function speak(text) {
   if (synth.speaking) {
@@ -39,9 +50,14 @@ function appendParagraph(text, type = "speech") {
 }
 
 function processResponse(data) {
-  var respond = "No response";
-  if ("speech_synthesize" in data) {
-    respond = data.speech_synthesize;
+  var respond = 'No response'
+  if ('speech_synthesise' in data) {
+    respond = data.speech_synthesise;
+  }
+  if ('conversation_id' in data && data.conversation_id) {
+    conversation_id = data.conversation_id;
+  } else {
+    conversation_id = null
   }
 
   speak(respond);
@@ -49,32 +65,27 @@ function processResponse(data) {
 }
 
 async function triggerHook(payload = {}) {
-  const prompt = window.confirm(`Send ${payload.speech_recognised} ?`);
-  if (prompt) {
-    fetch(hook || url, {
-      method: "POST",
-      mode: hook ? "no-cors" : "cors",
+  if (hookUrl) {
+    fetch(hookUrl.href, {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        processResponse(data);
-      })
-      .catch((error) => {
-        speak(error);
-        appendParagraph(error, "error");
-      });
-  }
-  else{
-    appendParagraph("Not Sent");
+      body: JSON.stringify(payload)
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error('Response was not ok');
+      }
+      return response.json();
+    }).then(data => {
+      processResponse(data);
+    }).catch(error => {
+      speak(error);
+      appendParagraph(error, 'error');
+    });
+  } else {
+    speak('Hook is not a valid url');
+    appendParagraph('Hook is not a valid url', 'error');
   }
 }
 
@@ -95,8 +106,8 @@ recognition.onresult = function (event) {
   var result = lastResult.transcript.toLowerCase().trim();
 
   appendParagraph(result);
-  triggerHook({ speech_recognised: result });
-};
+  triggerHook({ transcript: result, conversation_id: conversation_id });
+}
 
 recognition.onspeechend = function () {
   listening = false;

@@ -46,14 +46,14 @@ button#mic {
   height: 72px;
   border: none;
   border-radius: 50%;
-  background: #111111 url('mic_none-white-24dp.svg') center no-repeat;
+  background: #111111 url('images/mic_none-white-24dp.svg') center no-repeat;
   background-size: 48px;
   outline: none;
 }
 
 button#mic.active {
   border: 1px solid #eeeeee;
-  background: #111111 url('mic-white-24dp.svg') center no-repeat;
+  background: #111111 url('images/mic-white-24dp.svg') center no-repeat;
   background-size: 48px;
 }
 
