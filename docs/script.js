@@ -13,9 +13,16 @@ recognition.lang = "en-US";
 recognition.interimResults = false;
 recognition.maxAlternatives = 1;
 
+// Variables
 const urlParams = new URLSearchParams(window.location.search);
 var hookUrl;
+var prevTranscript = null;
+var listening = false;
+var conversation_id = null;
+var mic = document.querySelector("#mic");
+var resultText = document.querySelector("#result");
 
+// Hook url
 try {
   var hookUrl = new URL(window.atob(urlParams.get("hook")));
   if (!(hookUrl.protocol === "http:" || hookUrl.protocol === "https:")) {
@@ -25,12 +32,6 @@ try {
 } catch (e) {
   console.warn(e);
 }
-
-var listening = false;
-var conversation_id = null;
-
-var mic = document.querySelector("#mic");
-var resultText = document.querySelector("#result");
 
 function toggleRecognition(switchOn) {
   if (listening === false) {
@@ -46,16 +47,16 @@ function toggleRecognition(switchOn) {
 
 mic.onclick = toggleRecognition;
 
-function speak(text, listenOnEnd=false) {
+function speak(text, listenOnEnd = false) {
   if (synth.speaking) {
     console.error("speechSynthesis.speaking");
     return;
   }
   var utterThis = new SpeechSynthesisUtterance(text);
   if (listenOnEnd) {
-    utterThis.onend= function(event) {
+    utterThis.onend = function (event) {
       toggleRecognition();
-    }
+    };
   }
   synth.speak(utterThis);
 }
@@ -68,7 +69,7 @@ function appendParagraph(text, type = "speech") {
   resultText.appendChild(node);
 }
 
-function speakAndWrite(string, type="response", listenOnEnd=false) {
+function speakAndWrite(string, type = "response", listenOnEnd = false) {
   speak(string, listenOnEnd);
   appendParagraph(string, type);
 }
@@ -85,60 +86,55 @@ function processResponse(data) {
   speakAndWrite(respond);
 }
 
-function sendRequest(payload) {
-  fetch(hookUrl.href, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Response was not ok");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      processResponse(data);
-    })
-    .catch((error) => {
-      speakAndWrite(respond, "error");
-    });
-}
-
-var prevPayload = false;
 async function triggerHook(payload = {}) {
   if (hookUrl) {
-    if (!prevPayload) {
-      prevPayload = payload;
-      speakAndWrite(
-        `Do you want to send, "${payload.transcript}"?`,
-        'response',
-        true
-      );
-    } else {
-      const answer = payload.transcript;
-      if (answer === "yes") {
-        sendRequest(prevPayload);
-      
-      } else {
-        speakAndWrite("Did not send");
-      }
-
-      prevPayload = false;
-    }
+    fetch(hookUrl.href, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        processResponse(data);
+      })
+      .catch((error) => {
+        speakAndWrite(respond, "error");
+      });
   } else {
-    speakAndWrite('Hook is not a valid url', 'error');
+    speakAndWrite("Hook is not a valid url", "error");
+  }
+}
+
+function confirmTranscript(transcript) {
+  if (!prevTranscript) {
+    prevTranscript = transcript;
+    speakAndWrite(
+      `Do you want to send "${transcript}"?`,
+      "response",
+      true
+    );
+  } else {
+    if (['yes', 'ok', 'send', 'yeah', 'hell yeah'].includes(transcript)) {
+      triggerHook({ transcript: prevTranscript, conversation_id });
+    } else {
+      speakAndWrite("Didn't send it.");
+    }
+    prevTranscript = null;
   }
 }
 
 recognition.onresult = function (event) {
   var lastResult = event.results[event.results.length - 1][0];
   var result = lastResult.transcript.toLowerCase().trim();
-
   appendParagraph(result);
-  triggerHook({ transcript: result, conversation_id: conversation_id });
+  confirmTranscript(result)
 };
 
 recognition.onspeechend = function () {
