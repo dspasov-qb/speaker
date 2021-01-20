@@ -32,12 +32,19 @@ var conversation_id = null;
 var mic = document.querySelector("#mic");
 var resultText = document.querySelector("#result");
 
-function speak(text) {
+function speak(text, listenOnEnd=false) {
   if (synth.speaking) {
     console.error("speechSynthesis.speaking");
     return;
   }
   var utterThis = new SpeechSynthesisUtterance(text);
+  if (listenOnEnd) {
+    utterThis.onend= function(event) {
+      listening = true;
+      mic.classList.add("active");
+      recognition.start();
+    }
+  }
   synth.speak(utterThis);
 }
 
@@ -64,8 +71,8 @@ function processResponse(data) {
   appendParagraph(respond, "response");
 }
 
-function speakAndWrite(string) {
-  speak(string);
+function speakAndWrite(string, listenOnEnd=false) {
+  speak(string, listenOnEnd);
   appendParagraph(string);
 }
 
@@ -98,7 +105,8 @@ async function triggerHook(payload = {}) {
     if (!prevPayload) {
       prevPayload = payload;
       speakAndWrite(
-        `Do you want to send, "${payload.transcript}"? Say yes if you do`
+        `Do you want to send, "${payload.transcript}"?`,
+        true
       );
     } else {
       const answer = payload.transcript;
