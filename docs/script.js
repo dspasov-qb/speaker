@@ -70,7 +70,7 @@ function appendParagraph(text, type = "speech") {
 
 function speakAndWrite(string, type="response", listenOnEnd=false) {
   speak(string, listenOnEnd);
-  appendParagraph(string);
+  appendParagraph(string, type);
 }
 
 function processResponse(data) {
