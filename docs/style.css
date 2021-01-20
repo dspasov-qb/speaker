@@ -58,7 +58,7 @@ button#mic.active {
 }
 
 div#result {
-  padding: 104px 32px 104px 32px;
+  padding: 104px 32px 160px 32px;
   font-size: 18px;
   text-align: center;
 }

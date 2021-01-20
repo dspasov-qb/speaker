@@ -83,6 +83,7 @@ function appendParagraph(text, type = "speech") {
   node.appendChild(textnode);
   node.classList.add(type);
   resultText.appendChild(node);
+  window.scrollTo(0,document.body.scrollHeight);
 }
 
 function speakAndWrite(string, type = "response", listenOnEnd = false) {
