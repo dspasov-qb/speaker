@@ -13,6 +13,8 @@ recognition.lang = "en-US";
 recognition.interimResults = false;
 recognition.maxAlternatives = 1;
 
+const urlParams = new URLSearchParams(window.location.search);
+
 var myDynamicManifest = {
   "name": "Speaker",
   "short_name": "Speaker",
@@ -38,7 +40,6 @@ document.querySelector('#my-manifest-placeholder').setAttribute('href', manifest
 document.querySelector('#msapplication-starturl').setAttribute('content', `https://dspasov-qb.github.io/speaker/?hook=${urlParams.get("hook")}`);
 
 // Variables
-const urlParams = new URLSearchParams(window.location.search);
 var hookUrl;
 var prevTranscript = null;
 var listening = false;
