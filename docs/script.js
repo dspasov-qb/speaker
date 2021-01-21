@@ -13,6 +13,30 @@ recognition.lang = "en-US";
 recognition.interimResults = false;
 recognition.maxAlternatives = 1;
 
+var myDynamicManifest = {
+  "name": "Speaker",
+  "short_name": "Speaker",
+  "description": "Client for Pipelines Speech channel",
+  "lang": "en-US",
+  "start_url": `https://dspasov-qb.github.io/speaker/?hook=${urlParams.get("hook")}`,
+  "display": "standalone",
+  "theme_color": "#1c2c17",
+  "icons": [
+    {
+      "src": "images/speech.svg",
+      "sizes": "48x48 192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "background_color": "#111111"
+}
+
+const stringManifest = JSON.stringify(myDynamicManifest);
+const blob = new Blob([stringManifest], {type: 'application/json'});
+const manifestURL = URL.createObjectURL(blob);
+document.querySelector('#my-manifest-placeholder').setAttribute('href', manifestURL);
+document.querySelector('#msapplication-starturl').setAttribute('content', `https://dspasov-qb.github.io/speaker/?hook=${urlParams.get("hook")}`);
+
 // Variables
 const urlParams = new URLSearchParams(window.location.search);
 var hookUrl;
